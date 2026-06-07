@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>Quantio — Your personal AI</title>
+    <meta
+      name="description"
+      content="Quantio is a local-first personal AI with permanent memory, voice, offline mode, and cloud sync."
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#050814" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div id="auth-screen" class="screen auth-screen active">
+        <div class="auth-card">
+          <div class="auth-glow"></div>
+          <div class="auth-header">
+            <div class="quantio-marca">Quantio</div>
+            <div class="quantio-badge">AI 2.0</div>
+          </div>
+          <p class="auth-tagline">
+            Your personal AI with permanent memory, voice, offline mode, and
+            end-to-end cloud sync.
+          </p>
+          <form id="auth-form">
+            <div class="input-group">
+              <input
+                id="email"
+                type="email"
+                placeholder="Email address"
+                autocomplete="email"
+                required
+              />
+              <span class="input-focus"></span>
+            </div>
+            <div class="input-group">
+              <input
+                id="password"
+                type="password"
+                placeholder="Password"
+                autocomplete="current-password"
+                required
+              />
+              <span class="input-focus"></span>
+            </div>
+            <button id="auth-submit" type="submit" class="primary-btn full">
+              Login
+            </button>
+          </form>
+          <button
+            id="toggle-auth-mode"
+            class="secondary-btn full"
+            type="button"
+          >
+            Switch to Sign Up
+          </button>
+          <div class="message" id="auth-message"></div>
+        </div>
+      </div>
+
+      <div id="main-screen" class="screen">
+        <header class="topbar">
+          <button
+            id="hamburger"
+            class="icon-button"
+            type="button"
+            aria-label="Toggle sidebar"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div class="brand">
+            <div class="brand-icon"></div>
+            <span>Quantio</span>
+          </div>
+          <div class="top-actions">
+            <button id="button-insight" class="action-button" type="button">
+              ✨ Insight
+            </button>
+            <button id="button-export" class="action-button" type="button">
+              📎 Export
+            </button>
+            <button id="button-settings" class="action-button" type="button">
+              ⚙️ Settings
+            </button>
+            <button id="button-logout" class="action-button" type="button">
+              🚪 Logout
+            </button>
+          </div>
+        </header>
+        <main class="layout">
+          <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+              <div class="sidebar-headline">
+                <h2>Memory Vault</h2>
+                <span class="badge-sm">Neural</span>
+              </div>
+              <div class="search-wrapper">
+                <svg
+                  class="search-icon"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <circle cx="10.5" cy="10.5" r="6.5" />
+                  <line x1="15" y1="15" x2="21" y2="21" />
+                </svg>
+                <input id="history-search" placeholder="Search memories…" />
+              </div>
+              <div class="sidebar-actions">
+                <button
+                  id="button-new-chat"
+                  class="action-button primary"
+                  type="button"
+                >
+                  + New session
+                </button>
+                <button
+                  id="toggle-theme"
+                  class="action-button"
+                  type="button"
+                  aria-label="Toggle theme"
+                >
+                  🌓 Theme
+                </button>
+              </div>
+            </div>
+            <div id="history-list" class="history-list"></div>
+          </aside>
+
+          <section class="chat-panel">
+            <div class="chat-status" id="network-status">
+              <div class="status-indicator"></div>
+              <strong>Quantio Neural Core</strong>
+              <span>Active memory — ready to assist</span>
+            </div>
+            <div class="messages" id="message-list"></div>
+            <div class="chat-input-wrap">
+              <button
+                id="mic-button"
+                class="icon-button voice-btn"
+                type="button"
+                aria-label="Voice input"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <path
+                    d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"
+                  />
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                  <line x1="12" y1="19" x2="12" y2="22" />
+                </svg>
+              </button>
+              <input
+                id="message-input"
+                placeholder="Ask Quantio anything…"
+                autocomplete="off"
+              />
+              <button
+                id="send-button"
+                class="action-button primary send-btn"
+                type="button"
+              >
+                <span>Send</span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                >
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                </svg>
+              </button>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <section id="settings-drawer" class="drawer">
+        <div class="drawer-header">
+          <h2>System Preferences</h2>
+          <button id="close-settings" class="close-drawer" aria-label="Close">
+            ✕
+          </button>
+        </div>
+        <div class="form-row">
+          <label for="setting-api-key">Gemini API Key</label>
+          <div class="input-group">
+            <input
+              id="setting-api-key"
+              type="password"
+              placeholder="Enter Gemini API key"
+            />
+            <span class="input-focus"></span>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="setting-style">Answer style</label>
+          <div class="select-wrap">
+            <select id="setting-style">
+              <option value="normal">Balanced / Neural</option>
+              <option value="short">Concise & Direct</option>
+              <option value="funny">Creative & Witty</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="setting-voice">Voice response</label>
+          <div class="select-wrap">
+            <select id="setting-voice">
+              <option value="auto">Adaptive (auto)</option>
+              <option value="always">Always speak aloud</option>
+              <option value="never">Silent mode</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="setting-cloud-provider">Cloud sync provider</label>
+          <div class="select-wrap">
+            <select id="setting-cloud-provider">
+              <option value="google">Google Drive</option>
+              <option value="dropbox">Dropbox</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="setting-cloud-token">Access token</label>
+          <textarea
+            id="setting-cloud-token"
+            rows="3"
+            placeholder="Paste Google Drive or Dropbox access token"
+          ></textarea>
+        </div>
+        <div class="drawer-actions">
+          <button
+            id="save-settings"
+            class="action-button primary full"
+            type="button"
+          >
+            Save configuration
+          </button>
+          <button id="sync-cloud" class="action-button" type="button">
+            ⟳ Sync now
+          </button>
+          <button id="restore-cloud" class="action-button" type="button">
+            ↩️ Restore
+          </button>
+        </div>
+      </section>
+
+      <div id="toast" class="toast"></div>
+    </div>
+
+    <script src="/script.js"></script>
+  </body>
+</html>
