@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Quantio — Personal AI with Memory</title>
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiUXVhbnRpbyIsInNob3J0X25hbWUiOiJRdWFudGlvIiwic3RhcnRfdXJsIjoiLyIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwYTBhMGYiLCJ0aGVtZV9jb2xvciI6IiMwYTBhMGYiLCJpY29ucyI6W119">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ─── Auth Screen ──────────────────────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🧠</div>
+      <div>
+        <div class="auth-logo-text">Quantio</div>
+        <div class="auth-subtitle">Personal AI with permanent memory</div>
+      </div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="login-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" onclick="doLogin()" id="login-btn">Sign In</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" class="form-input" id="reg-email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="reg-password" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary" onclick="doRegister()" id="reg-btn">Create Account</button>
+    </div>
+
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ─── Main App ─────────────────────────────────────────────────────────── -->
+<div id="app">
+  <div id="offline-banner">⚠️ You're offline — messages will be queued and sent when you reconnect</div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="hamburger" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="header-logo">Quantio</div>
+    <div class="header-spacer"></div>
+    <div class="ollama-status" id="ollama-status-indicator">
+      <div class="status-dot" id="ollama-dot"></div>
+      <span id="ollama-label">Checking…</span>
+    </div>
+    <button class="btn btn-icon" onclick="toggleSettings()" title="Settings">⚙️</button>
+    <button class="btn btn-icon" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">🌙</button>
+    <button class="btn btn-icon" onclick="doLogout()" title="Sign out">👤</button>
+  </div>
+
+  <div class="main-content">
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-search">
+          <span class="sidebar-search-icon">🔍</span>
+          <input type="text" id="memory-search" placeholder="Search memories or #tags…" oninput="filterMemories(this.value)">
+        </div>
+        <div class="insight-card" id="insight-card">
+          <div class="insight-label">✨ Daily Insight</div>
+          <div id="insight-text"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-memories" id="memories-list">
+        <div style="text-align:center; color:var(--muted); font-size:12px; padding:20px">
+          Loading memories…
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-ghost" onclick="refreshMemories()" title="Refresh">🔄 Refresh</button>
+        <button class="btn btn-ghost" onclick="exportData()" title="Export all data">📥 Export</button>
+      </div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-area">
+      <div class="messages" id="messages">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">🧠</div>
+          <div class="empty-title">Welcome to Quantio</div>
+          <div class="empty-subtitle">Your AI remembers everything. Ask about past conversations, set preferences, or just start chatting.</div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-row">
+          <textarea id="msg-input" placeholder="Message Quantio… (use #tags)" rows="1"
+            oninput="autoResizeTextarea(this)"
+            onkeydown="handleInputKey(event)"></textarea>
+          <div class="input-actions">
+            <button class="btn-mic" id="mic-btn" onclick="toggleMic()" title="Voice input">🎤</button>
+            <button class="btn-send" id="send-btn" onclick="sendMessage()" title="Send">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="input-hint" id="input-hint">Press Enter to send • Shift+Enter for new line • #tag your messages</div>
+      </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel">
+      <div class="settings-header">
+        <div class="settings-title">Settings</div>
+        <button class="btn btn-icon" onclick="toggleSettings()">✕</button>
+      </div>
+      <div class="settings-body">
+
+        <!-- AI Provider -->
+        <div>
+          <div class="settings-section-title">AI Provider</div>
+          <div class="settings-row">
+            <label class="settings-label">Provider</label>
+            <select class="form-select" id="pref-provider" onchange="onProviderChange()">
+              <option value="ollama">🖥️ Ollama (Local — Recommended)</option>
+              <option value="gemini">☁️ Gemini (Cloud — requires key)</option>
+            </select>
+          </div>
+
+          <div class="ollama-model-selector" id="ollama-model-section">
+            <div class="settings-row" style="margin-top:12px">
+              <label class="settings-label">Ollama Model</label>
+              <select class="form-select" id="pref-ollama-model">
+                <option value="llama3.2">llama3.2</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="gemini-key-row" id="gemini-key-section" style="margin-top:12px">
+            <label class="settings-label">Gemini API Key</label>
+            <input type="password" class="form-input" id="pref-gemini-key" placeholder="AIza…">
+          </div>
+        </div>
+
+        <!-- Behaviour -->
+        <div>
+          <div class="settings-section-title">Behaviour</div>
+          <div class="settings-row">
+            <label class="settings-label">System Instructions</label>
+            <textarea class="form-textarea" id="pref-system"
+              placeholder="e.g. Reply in short bullet points. Be concise. Use a casual tone."></textarea>
+          </div>
+        </div>
+
+        <!-- Voice -->
+        <div>
+          <div class="settings-section-title">Voice</div>
+          <div class="settings-row">
+            <label class="settings-label">Text-to-speech</label>
+            <select class="form-select" id="pref-voice">
+              <option value="never">Never</option>
+              <option value="always">Always</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div>
+          <div class="settings-section-title">Appearance</div>
+          <div class="toggle-row">
+            <span class="toggle-label">Dark mode</span>
+            <div class="toggle" id="dark-toggle" onclick="toggleTheme()"></div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        <button class="btn btn-danger" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="/static/js/script.js"></script>
+</body>
+</html>
